@@ -1,218 +1,268 @@
-# Option Pricing Library
+# Option Pricing Models
 
-A Python-based option pricing library implementing classical and numerical
-methods used in quantitative finance.
-
-This repository is designed for:
-- learning and teaching derivatives pricing
-- research and experimentation
-- clean, modular financial engineering code
+This repository provides a comprehensive implementation of classical and advanced option pricing models, including lattice methods, continuous-time stochastic models, stochastic volatility models, and jump-diffusion frameworks. The project emphasizes mathematical rigor, numerical stability, and reproducibility.
 
 ---
 
-## 📌 Models Implemented
+# 1. Vanilla Option Pricing Models
 
-Perfect — below is a **READY-TO-PASTE, GitHub-safe README section**.
-You can **copy this entire block as-is** and paste it directly into `README.md` in VS Code.
+## 1.1 Black–Scholes–Merton Model
 
-✔ Academic tone
-✔ GitHub-compatible math
-✔ Uses only `$$ ... $$` and `\( ... \)`
-✔ No unsupported LaTeX environments
-
----
-
-## 📘 Option Pricing Models Implemented
-
-This repository implements a comprehensive set of **analytical, numerical, and stochastic option pricing models** under the **risk-neutral valuation framework**.
-The models are suitable for academic research, quantitative finance applications, and pedagogical use.
-
----
-
-## 1. Binomial and Trinomial Tree Models
-
-Discrete-time lattice-based option pricing models.
-
-### Implemented variants
-
-* Binomial tree (Cox–Ross–Rubinstein)
-* Binomial tree with continuous dividend yield
-* Binomial tree without dividends
-* Trinomial tree extensions
-
-### Asset price dynamics
-
-At each time step ( \Delta t ), the underlying evolves as:
+Under the risk-neutral measure, the asset follows:
 
 $$
-S_{t+\Delta t} =
-\begin{cases}
-S_t u & \text{with probability } p \
-S_t d & \text{with probability } 1 - p
-\end{cases}
+dS_t = r S_t dt + \sigma S_t dW_t
 $$
 
-with
+The European call price:
 
 $$
-u = e^{\sigma \sqrt{\Delta t}}, \quad
-d = e^{-\sigma \sqrt{\Delta t}}
-$$
-
-and risk-neutral probability
-
-$$
-p = \frac{e^{(r - q)\Delta t} - d}{u - d}
-$$
-
-where:
-
-* ( r ) is the risk-free rate
-* ( q ) is the continuous dividend yield
-
----
-
-## 2. Black–Scholes Family of Models
-
-Continuous-time diffusion-based models assuming lognormal asset price dynamics.
-
----
-
-### 2.1 Classical Black–Scholes Model
-
-The underlying asset follows a geometric Brownian motion:
-
-$$
-dS_t = (r - q) S_t , dt + \sigma S_t , dW_t
-$$
-
-The European call option price is given by:
-
-$$
-C = S_0 e^{-qT} N(d_1) - K e^{-rT} N(d_2)
+C = S_0 N(d_1) - K e^{-rT} N(d_2)
 $$
 
 where
 
 $$
-d_1 = \frac{\ln(S_0 / K) + (r - q + \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}},
+d_1 = \frac{\ln(S_0/K) + (r + \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}}, 
 \quad
 d_2 = d_1 - \sigma \sqrt{T}
 $$
 
-and ( N(\cdot) ) denotes the standard normal cumulative distribution function.
+Implemented variants:
+- Standard Black-Scholes
+- Fourier Transform approach
+- Finite Difference Method
+- Monte Carlo Simulation
+- Black 76 Model
+- Garman-Kohlhagen (FX options)
 
 ---
 
-### 2.2 Black–Scholes via Fourier Methods
+## 1.2 Binomial & Trinomial Models
 
-Option prices are computed using **characteristic functions** and Fourier inversion techniques.
-This approach improves numerical stability and allows extension to more complex stochastic models.
+Discrete-time approximation:
+
+$$
+S_{t+\Delta t} =
+\begin{cases}
+S_t u & \text{with probability } p \\
+S_t d & \text{with probability } 1-p
+\end{cases}
+$$
+
+Risk-neutral probability:
+
+$$
+p = \frac{e^{r\Delta t} - d}{u - d}
+$$
+
+Supports:
+- Dividend and non-dividend cases
+- Trinomial tree extension
+- American exercise
 
 ---
 
-### 2.3 Black–Scholes Finite Difference Methods
+# 2. Stochastic Volatility & Jump Models
 
-Numerical solution of the Black–Scholes partial differential equation:
+## 2.1 Heston Model
 
-$$
-\frac{\partial V}{\partial t}
-
-* \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2}
-* (r - q) S \frac{\partial V}{\partial S}
-
-- rV = 0
-  $$
-
-Implemented schemes include:
-
-* Explicit finite difference
-* Implicit finite difference
-
----
-
-### 2.4 Black Model (Black 1976)
-
-Used for pricing options on **forwards and futures**, where the forward price follows:
+Stochastic variance process:
 
 $$
-dF_t = \sigma F_t , dW_t
-$$
-
-Pricing is performed under the forward measure.
-
----
-
-### 2.5 Black–Scholes Monte Carlo
-
-Monte Carlo simulation of terminal asset prices:
-
-$$
-S_T = S_0 \exp\left(
-(r - q - \tfrac{1}{2}\sigma^2)T + \sigma \sqrt{T} Z
-\right)
-$$
-
-where ( Z \sim \mathcal{N}(0,1) ).
-
----
-
-### 2.6 Garman–Kohlhagen Model
-
-Extension of Black–Scholes for **foreign exchange options**, incorporating domestic and foreign interest rates:
-
-$$
-dS_t = (r_d - r_f) S_t , dt + \sigma S_t , dW_t
-$$
-
----
-
-## 3. Heston Stochastic Volatility Model
-
-A two-factor stochastic volatility model where variance is itself stochastic:
-
-$$
-dS_t = r S_t , dt + \sqrt{v_t} S_t , dW_t^{(1)}
+dS_t = r S_t dt + \sqrt{v_t} S_t dW_t^S
 $$
 
 $$
-dv_t = \kappa(\theta - v_t) dt + \xi \sqrt{v_t} dW_t^{(2)}
+dv_t = \kappa (\theta - v_t) dt + \sigma_v \sqrt{v_t} dW_t^v
 $$
 
 with correlation:
 
 $$
-\mathbb{E}[dW_t^{(1)} dW_t^{(2)}] = \rho , dt
+dW_t^S dW_t^v = \rho dt
 $$
 
-Option pricing is performed using characteristic functions and Fourier inversion.
+Captures:
+- Volatility smile
+- Mean reversion in variance
+- Leverage effect
 
 ---
 
-## 4. Merton Jump Diffusion Model
+## 2.2 Merton Jump Diffusion
 
-Extends Black–Scholes by allowing **discontinuous jumps** in asset prices:
+Adds Poisson jump component:
 
 $$
-dS_t = (r - \lambda k) S_t , dt + \sigma S_t , dW_t + S_t dJ_t
+dS_t = r S_t dt + \sigma S_t dW_t + S_t (J - 1) dN_t
 $$
 
-where:
+Where:
+- $N_t$ is Poisson process
+- $J$ is jump size
 
-* ( \lambda ) is the jump intensity
-* ( J_t ) is a compound Poisson jump process
-
-This model captures skewness, excess kurtosis, and volatility smile effects.
+Captures:
+- Fat tails
+- Market crashes
+- Discontinuous price moves
 
 ---
 
-## Research and Extensions
-
-The framework supports:
-
-* Cross-model price comparisons
-* Convergence analysis
-* Sensitivity and parameter studies
-* Extensions toward risk metrics such as VaR and CVaR
+# 3. Exotic Options
 
 ---
+
+# 3.1 Asian Options
+
+Asian options depend on the average asset price over time.
+
+Let monitoring times be $t_1, \dots, t_n$.
+
+---
+
+## Arithmetic Asian Option
+
+Average:
+
+$$
+A_{arith} = \frac{1}{n} \sum_{i=1}^{n} S_{t_i}
+$$
+
+Payoff (Call):
+
+$$
+\max(A_{arith} - K, 0)
+$$
+
+No closed-form solution under Black-Scholes → Monte Carlo required.
+
+---
+
+## Geometric Asian Option
+
+Average:
+
+$$
+A_{geo} = \left( \prod_{i=1}^{n} S_{t_i} \right)^{1/n}
+$$
+
+Closed-form solution exists under lognormal assumption.
+Used as control variate due to analytical tractability.
+
+---
+
+## Control Variate Method
+
+Variance reduction technique:
+
+Let:
+
+$$
+\hat{X}_{CV} = \hat{X} + \beta (Y - E[Y])
+$$
+
+Where:
+- $X$ = arithmetic payoff
+- $Y$ = geometric payoff (known expectation)
+- $\beta$ chosen to minimize variance
+
+Significantly improves Monte Carlo efficiency.
+
+---
+
+# 3.2 Barrier Options
+
+Path-dependent options activated or extinguished when asset crosses a barrier $B$.
+
+---
+
+## Types
+
+- Up-and-In
+- Up-and-Out
+- Down-and-In
+- Down-and-Out
+
+---
+
+### Example: Up-and-Out Call
+
+Payoff:
+
+$$
+\max(S_T - K, 0) \cdot \mathbf{1}_{\{ \max_{t \le T} S_t < B \}}
+$$
+
+Barrier monitoring introduces path-dependency.
+
+Pricing approaches:
+- Reflection principle (closed-form for some cases)
+- Monte Carlo simulation
+- Finite difference methods
+
+---
+
+# 3.3 Basket Options
+
+Options written on multiple assets.
+
+Let $S_1, \dots, S_m$ be correlated assets.
+
+Weighted basket:
+
+$$
+B_T = \sum_{i=1}^{m} w_i S_{i,T}
+$$
+
+Call payoff:
+
+$$
+\max(B_T - K, 0)
+$$
+
+Key considerations:
+- Correlation matrix
+- Covariance structure
+- Cholesky decomposition for simulation
+
+If assets follow correlated GBM:
+
+$$
+dS_i = r S_i dt + \sigma_i S_i dW_i
+$$
+
+with:
+
+$$
+dW_i dW_j = \rho_{ij} dt
+$$
+
+---
+
+# Numerical Methods Included
+
+- Monte Carlo Simulation
+- Variance Reduction (Control Variate)
+- Finite Difference Methods
+- Lattice Methods (Binomial / Trinomial)
+- Fourier Transform Techniques
+
+---
+
+# Academic Focus
+
+This repository emphasizes:
+
+- Mathematical derivations
+- Risk-neutral valuation
+- Stochastic calculus foundations
+- Numerical stability
+- Reproducible computational finance research
+
+---
+
+# Author
+
+Sarnava Datta  
+Computational Finance & Quantitative Research
